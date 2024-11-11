@@ -21,7 +21,7 @@ Continuous scene rotation using a timer.
 Demonstrate the application of transparency using OpenGL's blending functions.
 Explore the integration of third-party libraries for OpenGL development.
 Technologies Used
-Programming Language: С# and C++
+Programming Language:C++
 Development Environment: Microsoft Visual Studio 2022
 Graphics Libraries:
 OpenGL
