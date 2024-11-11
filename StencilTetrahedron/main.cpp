@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 
-// Шейдеры
+
 const char* vertexShaderSource = R"(
     #version 330 core
     layout (location = 0) in vec3 aPos;
@@ -32,12 +32,12 @@ const char* fragmentShaderSource = R"(
     }
 )";
 
-// Функция для компиляции шейдера
+
 GLuint compileShader(GLenum type, const char* source) {
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, NULL);
     glCompileShader(shader);
-    // Проверка ошибок
+
     int success;
     char infoLog[512];
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -48,17 +48,16 @@ GLuint compileShader(GLenum type, const char* source) {
     return shader;
 }
 
-// Функция для создания шейдерной программы
+
 GLuint createShaderProgram() {
     GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
     GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
-    // Создание программы
+
     GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
-    // Проверка ошибок
     int success;
     char infoLog[512];
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
@@ -66,25 +65,25 @@ GLuint createShaderProgram() {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
-    // Удаление шейдеров
+
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
     return shaderProgram;
 }
 
-// Обработчик изменения размера окна
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-// Структура для тороиды
+
 struct Torus {
     std::vector<float> vertices;
     std::vector<unsigned int> indices;
     unsigned int numc, numt;
 };
 
-// Функция генерации тороиды
+
 Torus generateTorus(float innerRadius, float outerRadius, unsigned int numc, unsigned int numt) {
     Torus torus;
     torus.numc = numc;
@@ -124,18 +123,18 @@ Torus generateTorus(float innerRadius, float outerRadius, unsigned int numc, uns
 }
 
 int main() {
-    // Инициализация GLFW
+
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return -1;
     }
 
-    // Настройка GLFW
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    // Создание окна
+
     GLFWwindow* window = glfwCreateWindow(800, 600, "Stencil Tetrahedron", NULL, NULL);
     if (window == NULL) {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -143,40 +142,35 @@ int main() {
         return -1;
     }
     glfwMakeContextCurrent(window);
-    // Установка обработчика изменения размера
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // Инициализация GLAD
+
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
 
-    // Включение теста глубины и буфера трафарета
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
 
-    // Создание шейдерной программы
+
     GLuint shaderProgram = createShaderProgram();
 
-    // Вершины тетраэдра
     float tetrahedronVertices[] = {
-        // Вершины
-        1.0f,  1.0f,  1.0f,  // Вершина A
-       -1.0f, -1.0f,  1.0f,  // Вершина B
-       -1.0f,  1.0f, -1.0f,  // Вершина C
-        1.0f, -1.0f, -1.0f   // Вершина D
+        1.0f,  1.0f,  1.0f,  
+       -1.0f, -1.0f,  1.0f,  
+       -1.0f,  1.0f, -1.0f,  
+        1.0f, -1.0f, -1.0f   
     };
 
-    // Индексы граней тетраэдра
+
     unsigned int tetrahedronIndices[] = {
-        0, 1, 2, // Грань ABC
-        0, 3, 1, // Грань ABD
-        0, 2, 3, // Грань ACD
-        1, 3, 2  // Грань BCD
+        0, 1, 2, 
+        0, 3, 1, 
+        0, 2, 3, 
+        1, 3, 2  
     };
 
-    // Создание VAO и VBO для тетраэдра
     GLuint tetraVAO, tetraVBO, tetraEBO;
     glGenVertexArrays(1, &tetraVAO);
     glGenBuffers(1, &tetraVBO);
@@ -184,24 +178,19 @@ int main() {
 
     glBindVertexArray(tetraVAO);
 
-    // Вершины
     glBindBuffer(GL_ARRAY_BUFFER, tetraVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(tetrahedronVertices), tetrahedronVertices, GL_STATIC_DRAW);
 
-    // Индексы
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tetraEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tetrahedronIndices), tetrahedronIndices, GL_STATIC_DRAW);
 
-    // Атрибуты вершин
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
 
-    // Генерация тороиды
     Torus torus = generateTorus(0.3f, 0.8f, 30, 30);
 
-    // Создание VAO и VBO для тороиды
     GLuint torusVAO, torusVBO, torusEBO;
     glGenVertexArrays(1, &torusVAO);
     glGenBuffers(1, &torusVBO);
@@ -220,7 +209,6 @@ int main() {
 
     glBindVertexArray(0);
 
-    // Пример координат для отверстий (центры граней)
     glm::vec3 holeCenters[] = {
         glm::vec3(1.0f, 1.0f, 1.0f),
         glm::vec3(-1.0f, -1.0f, 1.0f),
@@ -228,7 +216,6 @@ int main() {
         glm::vec3(1.0f, -1.0f, -1.0f)
     };
 
-    // Функция для рисования круга
     auto drawCircle = [&](glm::vec3 center) {
         int numSegments = 100;
         float radius = 0.2f;
@@ -256,12 +243,10 @@ int main() {
         glDeleteVertexArrays(1, &circleVAO);
         };
 
-    // Установка матриц вида и проекции
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
     glm::mat4 projection = glm::perspective(glm::radians(45.0f),
         800.0f / 600.0f, 0.1f, 100.0f);
 
-    // Получение местоположений uniform-переменных
     glUseProgram(shaderProgram);
     GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
     GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
@@ -271,71 +256,62 @@ int main() {
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-    // Включение смешивания для полупрозрачности
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // Переменная для вращения
+
     float angle = 0.0f;
     double previousTime = glfwGetTime();
 
-    // Основной цикл
+
     while (!glfwWindowShouldClose(window)) {
-        // Ввод
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        // Обновление времени и угла вращения
+
         double currentTime = glfwGetTime();
         double deltaTime = currentTime - previousTime;
         previousTime = currentTime;
-        angle += 50.0f * deltaTime; // 50 градусов в секунду
+        angle += 50.0f * deltaTime; 
         if (angle > 360.0f)
             angle -= 360.0f;
 
-        // Вращение модели
         glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
         glUseProgram(shaderProgram);
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(rotation));
 
-        // Очистка буферов
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        // Рендеринг тетраэдра в буфер трафарета
         glStencilMask(0xFF);
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
-        glUniform4f(colorLoc, 0.0f, 1.0f, 0.0f, 1.0f); // Зеленый цвет
+        glUniform4f(colorLoc, 0.0f, 1.0f, 0.0f, 1.0f); 
         glBindVertexArray(tetraVAO);
         glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
-        // Рендеринг отверстий
         glStencilMask(0x00);
         glStencilFunc(GL_ALWAYS, 0, 0xFF);
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         glDepthMask(GL_FALSE);
-        glUniform4f(colorLoc, 1.0f, 0.0f, 0.0f, 1.0f); // Цвет не важен
+        glUniform4f(colorLoc, 1.0f, 0.0f, 0.0f, 1.0f); 
         for (auto& center : holeCenters) {
             drawCircle(center);
         }
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         glDepthMask(GL_TRUE);
 
-        // Рендеринг тороиды (полупрозрачный цилиндр)
         glStencilMask(0x00);
-        glStencilFunc(GL_ALWAYS, 0, 0xFF); // Не влияет на трафарет
-        glUniform4f(colorLoc, 0.0f, 0.0f, 1.0f, 0.5f); // Полупрозрачный синий
+        glStencilFunc(GL_ALWAYS, 0, 0xFF); 
+        glUniform4f(colorLoc, 0.0f, 0.0f, 1.0f, 0.5f); 
         glBindVertexArray(torusVAO);
         glDrawElements(GL_TRIANGLES, torus.indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
-        // Обмен буферов и обработка событий
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    // Очистка ресурсов
     glDeleteVertexArrays(1, &tetraVAO);
     glDeleteBuffers(1, &tetraVBO);
     glDeleteBuffers(1, &tetraEBO);
