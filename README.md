@@ -129,8 +129,7 @@ while (!glfwWindowShouldClose(window)) {
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo-name.git
-   cd your-repo-name
+   git clone: https://github.com/Nissmoline/StencilTetrahedron
    ```
 
 2. Open the project in Visual Studio 2022.
@@ -153,4 +152,4 @@ while (!glfwWindowShouldClose(window)) {
 
 ## License
 
-This project is open-source and available under the MIT License. For more details, see the `LICENSE` file.
+This project is open-source and available under the MIT License. For more details.
